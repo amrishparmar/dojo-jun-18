@@ -20,15 +20,13 @@ def resize_image(img, scale_factor=8):
 
 
 def get_luminance(characters):
-    font = ImageFont.truetype("/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf", 12)
     luminance = defaultdict(list)
     for character in characters:
         space = Image.new("L", (8, 16))
         draw = ImageDraw.Draw(space)
-        draw.text((2,2), character, 255, font=font)
+        draw.text((2,2), character, 255)
 
         lum = space.resize((1,1), Image.BICUBIC).getpixel((0,0))
-        # print("{} = {}".format(character, lum))
         luminance[lum].append(character)
     return luminance
 
@@ -43,7 +41,8 @@ def normalize_luminance(luminance):
 
 
 def get_closest(mapping, value):
-    return mapping.get(value, mapping[min(mapping.keys(), key=lambda k: abs(k-value))])
+    closest = min(mapping.keys(), key=lambda k: abs(k-value))
+    return mapping.get(value, mapping[closest])
 
 
 def convert_to_ascii(image, luminance):
@@ -60,12 +59,11 @@ def convert_to_ascii(image, luminance):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('image')
-    parser.add_argument('--scale-factor', type=int)
+    parser.add_argument('--scale-factor', default=1, type=int)
     args = parser.parse_args(sys.argv[1:])
 
     img = load_image_as_grayscale(args.image)
     img = resize_image(img, args.scale_factor)
-    # img.save('output.png')
     luminance = get_luminance(string.printable[:-5])
     luminance = normalize_luminance(luminance)
 
